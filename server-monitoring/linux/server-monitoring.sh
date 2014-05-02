@@ -16,37 +16,37 @@ urlPS='http://api.develera.com/v1/ps'
 #
 # SERVER INFO
 #
-host=$(lsb_release -d | awk '/Description:/ {$1=""; print $0}'| sed -e 's/^ *//' -e 's/ *$//')
-timezone=$(date +%z)
-boottime=$(cat /proc/stat | grep btime | awk '{ print $2 }')
-hostname=$(uname -n)
-query=$url'?key='$DEVELERAHOSTINGKEY'&hostname='$hostname'&tz='$timezone
-queryHost='&os='$host'&bt='$boottime
+queryBuilder='?key='$DEVELERAHOSTINGKEY
+queryBuilder=$queryBuilder'&os='$(lsb_release -d | awk '/Description:/ {$1=""; print $0}'| sed -e 's/^ *//' -e 's/ *$//')
+queryBuilder=$queryBuilder'&ip='$(curl ipecho.net/plain)
+queryBuilder=$queryBuilder'&tz='$(date +%z)
+queryBuilder=$queryBuilder'&bt='$(cat /proc/stat | grep btime | awk '{ print $2 }')
+queryBuilder=$queryBuilder'&hostname='$(uname -n)
 
 
 #
 # MEMORY INFO
 #
 memRaw=$(cat /proc/meminfo)
-totalMem=$(echo -e "$memRaw" | awk '/MemTotal/ {print $2}')
-totalFree=$(echo -e "$memRaw" | awk '/MemFree/ {print $2}')
-totalBuffers=$(echo -e "$memRaw" | awk '/Buffers/ {print $2}')
-totalCached=$(echo -e "$memRaw" | awk '/^Cached:/ {print $2}')
-totalSwap=$(echo -e "$memRaw" | awk '/SwapTotal/ {print $2}')
-totalSwapFree=$(echo -e "$memRaw" | awk '/SwapFree/ {print $2}')
-queryMem='&mem='$totalMem'&memfree='$totalFree'&membuff='$totalBuffers'&memcached='$totalCached'&swap='$totalSwap'&swapfree='$totalSwapFree
+queryBuilder=$queryBuilder'&mem='$(echo -e "$memRaw" | awk '/MemTotal/ {print $2}')
+queryBuilder=$queryBuilder'&memfree='$(echo -e "$memRaw" | awk '/MemFree/ {print $2}')
+queryBuilder=$queryBuilder'&membuff='$(echo -e "$memRaw" | awk '/Buffers/ {print $2}')
+queryBuilder=$queryBuilder'&memcached='$(echo -e "$memRaw" | awk '/^Cached:/ {print $2}')
+queryBuilder=$queryBuilder'&swap='$(echo -e "$memRaw" | awk '/SwapTotal/ {print $2}')
+queryBuilder=$queryBuilder'&swapfree='$(echo -e "$memRaw" | awk '/SwapFree/ {print $2}')
+memRaw=''
 
 
 #
 # CPU INFO
 #
 cpuRaw=$(cat /proc/cpuinfo)
-cpuModelName=$(echo -e "$cpuRaw" | awk '/model name/' | cut -d':' -f2 | sed -e 's/^ *//' -e 's/ *$//')
-cpuMhz=$(echo -e "$cpuRaw" | awk '/cpu MHz/' | cut -d':' -f2 | tr -d ' ')
-cpuCacheSize=$(echo -e "$cpuRaw" | awk '/cache size/' | cut -d':' -f2 | tr -d ' ')
-cpuCores=$(grep -c processor /proc/cpuinfo)
-cpuLoad5Min=$(uptime | awk -F"average:" '{print $2}' | cut -d "," -f2 | sed -e 's/^ *//' -e 's/ *$//')
-queryCpu='&cpumodel='$cpuModelName'&cpumhz='$cpuMhz'&cpucache='$cpuCacheSize'&cpucores='$cpuCores'&cpuload5='$cpuLoad5Min
+queryBuilder=$queryBuilder'&cpumodel='$(echo -e "$cpuRaw" | awk '/model name/' | cut -d':' -f2 | sed -e 's/^ *//' -e 's/ *$//')
+queryBuilder=$queryBuilder'&cpumhz='$(echo -e "$cpuRaw" | awk '/cpu MHz/' | cut -d':' -f2 | tr -d ' ')
+queryBuilder=$queryBuilder'&cpucache='$(echo -e "$cpuRaw" | awk '/cache size/' | cut -d':' -f2 | tr -d ' ')
+queryBuilder=$queryBuilder'&cpucores='$(grep -c processor /proc/cpuinfo)
+queryBuilder=$queryBuilder'&cpuload5='$(uptime | awk -F"average:" '{print $2}' | cut -d "," -f2 | sed -e 's/^ *//' -e 's/ *$//')
+cpuRaw=''
 
 
 #
@@ -65,6 +65,12 @@ let i=i+1
 done <<< "$hddArray"
 quHdd=${quHdd//]/\\]}
 quHdd=${quHdd//[/\\[}
+queryBuilder=$queryBuilder$quHdd
+hddName=''
+hddTotal=''
+hddUsed=''
+hddFree=''
+hddArray=''
 
 
 #
@@ -84,16 +90,24 @@ then
     vndata=$vndata$vnstatdataAkt$vnstatdataBef
   done <<< "$eths"
   vndata=${vndata//;/\-}
+  queryBuilder=$queryBuilder$vndata
+  vndata=''
+  befHour=''
+  nowHour=''
+  eths=''
+  vnstatcheck=''
+  vnstatdataAkt=''
+  vnstatdataBef=''
 fi
 
 
 #
 # SEND TO DEVELERA
 #
-complete=$query$queryMem$queryCpu$queryHdd$queryHost$quHdd$vndata
-complete=${complete// /%20}
-curl $complete
-
+queryBuilder=${queryBuilder// /%20}
+curl -s $url$queryBuilder
+url=''
+queryBuilder=''
 
 
 #
@@ -114,6 +128,12 @@ then
   psdata=$(echo -e "$psdata" | sed 's/^.//')
   curl -X POST $urlPS'?key='$DEVELERAHOSTINGKEY --data '{"data":['$psdata']}' -H "Content-Type: application/json"
 fi
-
-
-
+processraw=''
+psdata=''
+psuser=''
+pspid=''
+pscpu=''
+psmem=''
+pscom=''
+urlPS=''
+DEVELERAHOSTINGKEY=''
