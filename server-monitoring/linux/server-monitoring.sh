@@ -9,8 +9,8 @@ DEVELERAHOSTINGKEY='your-develera-server-key'
 #
 # DEVELERA API URL
 #
-url='http://cdata.develera.com/v1/serverinfo'
-urlPS='http://cdata.develera.com/v1/ps'
+url='http://api.develera.com/v1/serverinfo'
+urlPS='http://api.develera.com/v1/ps'
 
 
 #
