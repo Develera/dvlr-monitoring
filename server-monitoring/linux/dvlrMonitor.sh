@@ -13,7 +13,7 @@ then
   echo "Key not set"
   exit 1
 fi
-DEVELERAHOSTINGKEY=$1
+DEVELERASERVERKEY=$1
 
 
 #
@@ -25,7 +25,7 @@ urlPS='http://cdata.develera.com/v1/ps'
 #
 # SERVER INFO
 #
-queryBuilder='?key='$DEVELERAHOSTINGKEY
+queryBuilder='?key='$DEVELERASERVERKEY
 queryBuilder=$queryBuilder'&os='$(lsb_release -d | awk '/Description:/ {$1=""; print $0}'| sed -e 's/^ *//' -e 's/ *$//')
 queryBuilder=$queryBuilder'&ip='$(curl ipecho.net/plain)
 queryBuilder=$queryBuilder'&tz='$(date +%z)
@@ -134,7 +134,7 @@ done <<< "$processraw"
 if [ "$psdata" != '' ]
 then
   psdata=$(echo -e "$psdata" | sed 's/^.//')
-  curl -X POST $urlPS'?key='$DEVELERAHOSTINGKEY --data '{"data":['$psdata']}' -H "Content-Type: application/json"
+  curl -X POST $urlPS'?key='$DEVELERASERVERKEY --data '{"data":['$psdata']}' -H "Content-Type: application/json"
 fi
 processraw=''
 psdata=''
@@ -144,6 +144,6 @@ pscpu=''
 psmem=''
 pscom=''
 urlPS=''
-DEVELERAHOSTINGKEY=''
+DEVELERASERVERKEY=''
 
 
