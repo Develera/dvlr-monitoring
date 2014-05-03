@@ -1,17 +1,26 @@
 #!/bin/bash
 
 #
+# Parameter
+# $1 = key
+#
+
+#
 # DEVELERA SERVER KEY
 #
-DEVELERAHOSTINGKEY='your-develera-server-key'
+if [ -z "$1" ]
+then
+  echo "Key not set"
+  exit 1
+fi
+DEVELERAHOSTINGKEY=$1
 
 
 #
 # DEVELERA API URL
 #
-url='http://api.develera.com/v1/serverinfo'
-urlPS='http://api.develera.com/v1/ps'
-
+url='http://cdata.develera.com/v1/serverinfo'
+urlPS='http://cdata.develera.com/v1/ps'
 
 #
 # SERVER INFO
@@ -109,7 +118,6 @@ curl -s $url$queryBuilder
 url=''
 queryBuilder=''
 
-
 #
 # GET AND SEND PROCESS INFO
 #
@@ -137,3 +145,5 @@ psmem=''
 pscom=''
 urlPS=''
 DEVELERAHOSTINGKEY=''
+
+
